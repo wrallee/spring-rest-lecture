@@ -1,9 +1,7 @@
 package me.wrallee.demorestapi.events;
 
 import lombok.*;
-
 import java.time.LocalDateTime;
-
 
 @Builder @AllArgsConstructor @NoArgsConstructor
 @Getter @Setter @EqualsAndHashCode(of = "id")
