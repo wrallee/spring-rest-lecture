@@ -37,7 +37,7 @@ public class EventControllerTests {
     @Test
     @Transactional
     public void createEvent() throws Exception {
-        Event event = Event.builder()
+        EventDto event = EventDto.builder()
                 .name("Spring")
                 .description("REST API Development with Spring")
                 .beginEnrollmentDateTime(LocalDateTime.of(2021, 4, 6, 23, 26))
@@ -48,12 +48,7 @@ public class EventControllerTests {
                 .maxPrice(200)
                 .limitOfEnrollment(100)
                 .location("강남역 D2 스타텁 팩토리")
-                .offline(false)
                 .build();
-
-        event.setId(100L);
-        event.setFree(true);
-        event.setEventStatus(EventStatus.PUBLISHED);
 
         mockMvc.perform(post("/api/events")
                     .contentType(MediaType.APPLICATION_JSON)
@@ -67,5 +62,33 @@ public class EventControllerTests {
                 .andExpect(jsonPath("id").value(Matchers.not(100L)))
                 .andExpect(jsonPath("free").value(Matchers.not(true)))
                 .andExpect(jsonPath("eventStatus").value(EventStatus.DRAFT.name()));
+    }
+
+    @Test
+    @Transactional
+    public void createEvent_Bad_Requests() throws Exception {
+        Event event = Event.builder()
+                .name("Spring")
+                .description("REST API Development with Spring")
+                .beginEnrollmentDateTime(LocalDateTime.of(2021, 4, 6, 23, 26))
+                .closeEnrollmentDateTime(LocalDateTime.of(2021, 4, 7, 23, 26))
+                .beginEventDateTime(LocalDateTime.of(2021, 4, 8, 23, 26))
+                .endEventDateTime(LocalDateTime.of(2021, 4, 9, 23, 26))
+                .basePrice(100)
+                .maxPrice(200)
+                .limitOfEnrollment(100)
+                .location("강남역 D2 스타텁 팩토리")
+                .build();
+
+        event.setId(100L);
+        event.setFree(true);
+        event.setEventStatus(EventStatus.PUBLISHED);
+
+        mockMvc.perform(post("/api/events")
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaTypes.HAL_JSON)
+                .content(objectMapper.writeValueAsString(event)))
+                .andDo(print())
+                .andExpect(status().isBadRequest()); // 400
     }
 }
