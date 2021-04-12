@@ -23,6 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @AutoConfigureMockMvc
+@Transactional
 public class EventControllerTests {
 
     @Autowired
@@ -35,7 +36,6 @@ public class EventControllerTests {
     EventRepository eventRepository;
 
     @Test
-    @Transactional
     public void createEvent() throws Exception {
         EventDto event = EventDto.builder()
                 .name("Spring")
@@ -65,7 +65,6 @@ public class EventControllerTests {
     }
 
     @Test
-    @Transactional
     public void createEvent_Bad_Requests() throws Exception {
         Event event = Event.builder()
                 .name("Spring")
@@ -90,5 +89,15 @@ public class EventControllerTests {
                 .content(objectMapper.writeValueAsString(event)))
                 .andDo(print())
                 .andExpect(status().isBadRequest()); // 400
+    }
+
+    @Test
+    public void createEvent_Bad_Request_Empty_Input() throws Exception {
+        EventDto eventDto = EventDto.builder().build();
+
+        mockMvc.perform(post("/api/events")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(objectMapper.writeValueAsString(eventDto)))
+                .andExpect(status().isBadRequest());
     }
 }
