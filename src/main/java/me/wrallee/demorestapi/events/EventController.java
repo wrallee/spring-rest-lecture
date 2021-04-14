@@ -2,7 +2,9 @@ package me.wrallee.demorestapi.events;
 
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
+import org.springframework.hateoas.EntityModel;
 import org.springframework.hateoas.MediaTypes;
+import org.springframework.hateoas.server.mvc.WebMvcLinkBuilder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.Errors;
@@ -38,7 +40,13 @@ public class EventController {
         event.update();
         Long id = eventRepository.save(event);
 
-        URI createdUri = linkTo(EventController.class).slash(id).toUri();
-        return ResponseEntity.created(createdUri).body(event);
+        WebMvcLinkBuilder selfLinkBuilder = linkTo(EventController.class).slash(id);
+
+        URI createdUri = selfLinkBuilder.toUri();
+        EntityModel<Event> eventResource = EntityModel.of(event)
+                .add(linkTo(EventController.class).withRel("query-events"))
+                .add(selfLinkBuilder.withSelfRel())
+                .add(selfLinkBuilder.withRel("update-event"));
+        return ResponseEntity.created(createdUri).body(eventResource);
     }
 }
